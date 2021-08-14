@@ -77,8 +77,8 @@ func main() {
 	fmt.Printf("%d players => %+v\n", len(players), players)
 
 	// 2. Get Upcoming match
-	// e, _ := tsClient.GetUpcomingEvent()
-	// fmt.Printf("Event => %+v\n", e)
+	nextMatch, _ := tsClient.GetUpcomingEvent(teamId, date)
+	fmt.Printf("Event => %+v\n", nextMatch)
 
 	// 3. Get Player availability
 	// tsClient.GetAvailability(e)

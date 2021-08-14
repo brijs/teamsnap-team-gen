@@ -135,7 +135,30 @@ func (c *Client) GetAllPlayersInTeam(teamId int) (players []Player, err error) {
 	return
 }
 
-func (c *Client) GetUpcomingEvent() (e Event, err error) {
+func (c *Client) GetUpcomingEvent(teamId int, date time.Time) (e Event, err error) {
+	fmt.Println("GetUpcomingEvent")
+
+	log.Println(c.baseURL + fmt.Sprintf("/events/search?started_after=%s&page_size=1&team_id=%d", date.Format("2006-01-02T15:04"), teamId))
+
+	req, err := http.NewRequest("GET", c.baseURL+fmt.Sprintf("/events/search?started_after=%s&page_size=1&team_id=%d", date.Format("2006-01-02T15:04"), teamId), nil)
+	if err != nil {
+		log.Fatalln("Error creating Request.\n[ERROR] -", err)
+	}
+
+	res, err := c.sendRequest(req)
+	if err != nil {
+		log.Fatalln("Error on response.\n[ERROR] -", err)
+	}
+
+	if len(res.Collection.Items) == 0 {
+		return e, fmt.Errorf("Event was not found")
+	}
+	e = mapToEvent(res.Collection.Items[0].Data)
+
+	return e, err
+}
+
+func (c *Client) GetUpcomingEvent2() (e Event, err error) {
 	fmt.Println("GetUpcomingEvent")
 
 	// test event
