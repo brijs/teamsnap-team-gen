@@ -74,18 +74,26 @@ func main() {
 
 	// 1. Get  all players in team
 	players, _ := tsClient.GetAllPlayersInTeam(teamId)
-	fmt.Printf("%d players => %+v\n", len(players), players)
+	printDebugInfo(players)
 
 	// 2. Get Upcoming match
 	nextMatch, _ := tsClient.GetUpcomingEvent(teamId, date)
 	fmt.Printf("Event => %+v\n", nextMatch)
 
 	// 3. Get Player availability
-	// tsClient.GetAvailability(e)
-
-	// 4. Split into teams
+	tsClient.GetAvailability(nextMatch.Id, players)
+	printDebugInfo(players)
 
 	// 5. Get Volunteer assignments
 
+	// 4. Split into teams
+
 	// 6. Print / publish to spreadsheet
+}
+
+func printDebugInfo(players []*ts.Player) {
+	fmt.Printf("Players len=%d\n", len(players))
+	for _, p := range players {
+		fmt.Printf("%+v\n", *p)
+	}
 }

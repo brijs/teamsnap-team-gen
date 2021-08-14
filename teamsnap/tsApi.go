@@ -66,10 +66,11 @@ func mapToEvent(d []cj.DataType) Event {
 	return e
 }
 
-func mapToPlayers(i []cj.ItemType) []Player {
-	var players []Player
+func mapToPlayers(i []cj.ItemType) []*Player {
+	var players []*Player
 	for _, d := range i {
-		p := Player{}
+		p, isPlayer := Player{}, true
+
 		for _, v := range d.Data {
 			// fmt.Println(v.Name, "=>", v.Value)
 			switch n := v.Name; n {
@@ -79,27 +80,36 @@ func mapToPlayers(i []cj.ItemType) []Player {
 			case "first_name":
 				p.FirstName = v.Value.(string)
 			case "last_name":
-				p.FirstName = v.Value.(string)
-
+				p.LastName = v.Value.(string)
+			case "is_non_player":
+				isPlayer = !v.Value.(bool)
 			case "status_code":
 				// fmt.Printf(v.Name, "%T %v=>\n", v.Value, v.Value)
 				p.Available = v.Value != nil && v.Value.(float64) != 0
 			}
 		}
-		players = append(players, p)
+		if isPlayer {
+			players = append(players, &p)
+		}
 
 	}
 	return players
 }
 
-func mapToMembers(i []cj.ItemType) []Player {
-	var players []Player
+func mapAvailabilityToPlayers(i []cj.ItemType, players []*Player) {
+	// build a map for all players for quick lookup
+	var temp map[uint64]*Player = make(map[uint64]*Player)
+	for _, p := range players {
+		// p := p
+		temp[p.Id] = p
+	}
+
 	for _, d := range i {
 		p := Player{}
 		for _, v := range d.Data {
 			// fmt.Println(v.Name, "=>", v.Value)
 			switch n := v.Name; n {
-			case "id":
+			case "member_id":
 				p.Id = uint64(v.Value.(float64))
 				// p.Id = v.Value.(string)
 			case "status_code":
@@ -107,13 +117,16 @@ func mapToMembers(i []cj.ItemType) []Player {
 				p.Available = v.Value != nil && v.Value.(float64) != 0
 			}
 		}
-		players = append(players, p)
+		// update back in the players slice
+		if temp[p.Id] != nil {
+			temp[p.Id].Available = p.Available
+		}
 
 	}
-	return players
+
 }
 
-func (c *Client) GetAllPlayersInTeam(teamId int) (players []Player, err error) {
+func (c *Client) GetAllPlayersInTeam(teamId int) (players []*Player, err error) {
 	fmt.Println("GetAllPlayersInTeam")
 
 	// test event
@@ -181,11 +194,11 @@ func (c *Client) GetUpcomingEvent2() (e Event, err error) {
 	return e, err
 }
 
-func (c *Client) GetAvailability(e Event) (err error) {
-	fmt.Println("GetMembers")
+func (c *Client) GetAvailability(eventId uint64, players []*Player) (err error) {
+	fmt.Println("GetAvailability")
 
 	// Create a new request using http
-	req, err := http.NewRequest("GET", c.baseURL+"availabilities/search?event_id="+strconv.FormatUint(e.Id, 10), nil)
+	req, err := http.NewRequest("GET", c.baseURL+"availabilities/search?event_id="+strconv.FormatUint(uint64(eventId), 10), nil)
 	if err != nil {
 		log.Fatalln("Error creating Request.\n[ERROR] -", err)
 	}
@@ -199,8 +212,7 @@ func (c *Client) GetAvailability(e Event) (err error) {
 		return fmt.Errorf("No Players were not found")
 	}
 
-	players := mapToMembers(res.Collection.Items)
-	fmt.Printf("Players => %+v\n", players)
+	mapAvailabilityToPlayers(res.Collection.Items, players)
 
 	return err
 }
