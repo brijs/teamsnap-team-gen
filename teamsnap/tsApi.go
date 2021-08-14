@@ -13,7 +13,7 @@ import (
 // type Id uint64
 
 type Player struct {
-	Id            string //uint64
+	Id            uint64 // string //uint64
 	FirstName     string
 	LastName      string
 	PreferredTeam string
@@ -66,7 +66,7 @@ func mapToEvent(d []cj.DataType) Event {
 	return e
 }
 
-func mapToMembers(i []cj.ItemType) []Player {
+func mapToPlayers(i []cj.ItemType) []Player {
 	var players []Player
 	for _, d := range i {
 		p := Player{}
@@ -74,8 +74,13 @@ func mapToMembers(i []cj.ItemType) []Player {
 			// fmt.Println(v.Name, "=>", v.Value)
 			switch n := v.Name; n {
 			case "id":
-				// p.Id = uint64(v.Value.(float64))
-				p.Id = v.Value.(string)
+				p.Id = uint64(v.Value.(float64))
+				// p.Id = v.Value.(string)
+			case "first_name":
+				p.FirstName = v.Value.(string)
+			case "last_name":
+				p.FirstName = v.Value.(string)
+
 			case "status_code":
 				// fmt.Printf(v.Name, "%T %v=>\n", v.Value, v.Value)
 				p.Available = v.Value != nil && v.Value.(float64) != 0
@@ -85,6 +90,49 @@ func mapToMembers(i []cj.ItemType) []Player {
 
 	}
 	return players
+}
+
+func mapToMembers(i []cj.ItemType) []Player {
+	var players []Player
+	for _, d := range i {
+		p := Player{}
+		for _, v := range d.Data {
+			// fmt.Println(v.Name, "=>", v.Value)
+			switch n := v.Name; n {
+			case "id":
+				p.Id = uint64(v.Value.(float64))
+				// p.Id = v.Value.(string)
+			case "status_code":
+				// fmt.Printf(v.Name, "%T %v=>\n", v.Value, v.Value)
+				p.Available = v.Value != nil && v.Value.(float64) != 0
+			}
+		}
+		players = append(players, p)
+
+	}
+	return players
+}
+
+func (c *Client) GetAllPlayersInTeam(teamId int) (players []Player, err error) {
+	fmt.Println("GetAllPlayersInTeam")
+
+	// test event
+	req, err := http.NewRequest("GET", c.baseURL+fmt.Sprintf("members/search?team_id=%d", teamId), nil)
+	if err != nil {
+		log.Fatalln("Error creating Request.\n[ERROR] -", err)
+	}
+
+	res, err := c.sendRequest(req)
+	if err != nil {
+		log.Fatalln("Error on response.\n[ERROR] -", err)
+	}
+
+	if len(res.Collection.Items) == 0 {
+		return players, fmt.Errorf("Event was not found")
+	}
+
+	players = mapToPlayers(res.Collection.Items)
+	return
 }
 
 func (c *Client) GetUpcomingEvent() (e Event, err error) {

@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
 )
 
 func getTeamSnapToken() string {
@@ -30,6 +32,15 @@ func enumFlag(target *string, name string, safelist []string, usage string) {
 		return fmt.Errorf("must be one of %v", safelist)
 	})
 }
+
+var (
+	teamNameLookup = map[string]int{
+		"IntA": 6892639,
+		"IntB": 6892639,
+		"IntC": 6892639,
+		"IntD": 6892639,
+	}
+)
 
 var Usage = func() {
 	fmt.Fprintf(os.Stderr, "\nUsage of %s:\n Split available players for the specified team & date for an upcoming game\n\n", os.Args[0])
@@ -56,12 +67,25 @@ func main() {
 	flag.Usage = Usage
 
 	flag.Parse()
-	fmt.Println(teamName, date)
+	teamId := teamNameLookup[teamName]
+	fmt.Println("Running for team = (", teamId, teamName, "), for date=", date)
 
-	// tsClient := ts.NewClient(getTeamSnapToken())
+	tsClient := ts.NewClient(getTeamSnapToken())
 
+	// 1. Get  all players in team
+	players, _ := tsClient.GetAllPlayersInTeam(teamId)
+	fmt.Printf("%d players => %+v\n", len(players), players)
+
+	// 2. Get Upcoming match
 	// e, _ := tsClient.GetUpcomingEvent()
 	// fmt.Printf("Event => %+v\n", e)
 
+	// 3. Get Player availability
 	// tsClient.GetAvailability(e)
+
+	// 4. Split into teams
+
+	// 5. Get Volunteer assignments
+
+	// 6. Print / publish to spreadsheet
 }
