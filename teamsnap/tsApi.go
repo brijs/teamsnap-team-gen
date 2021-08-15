@@ -46,7 +46,7 @@ func mapToEvent(d []cj.DataType) Event {
 			e.Notes = v.Value.(string)
 		case "uniform":
 			e.Uniform = v.Value.(string)
-		case "":
+		case "location_name":
 			e.Location = v.Value.(string)
 		case "start_date":
 			// Monday, January 2, 2006 10:04:05 PM
