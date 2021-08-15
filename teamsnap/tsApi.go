@@ -43,7 +43,9 @@ func mapToEvent(d []cj.DataType) Event {
 		case "team_id":
 			e.TeamId = uint64(v.Value.(float64))
 		case "notes":
-			e.Notes = v.Value.(string)
+			if v.Value != nil {
+				e.Notes = v.Value.(string)
+			}
 		case "uniform":
 			e.Uniform = v.Value.(string)
 		case "location_name":
