@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
 	"golang.org/x/net/context"
@@ -217,7 +218,8 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 	// Match
 	values = append(values, []interface{}{nextMatch.LeagueName})
 	values = append(values, []interface{}{"Location", nextMatch.Location})
-	values = append(values, []interface{}{"Date", nextMatch.StartDate.Local().String()})
+	// hardcode 15 min earlier than startDate
+	values = append(values, []interface{}{"Date", nextMatch.StartDate.Add(time.Minute * -15).Local().String()})
 	values = append(values, []interface{}{"Uniform", nextMatch.Uniform})
 	values = append(values, []interface{}{"Note", nextMatch.Notes})
 
