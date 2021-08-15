@@ -40,6 +40,29 @@ func calculateAdjustments(total, a, b int) adj {
 	return adj{a2b, b2a, n2a, n2b}
 }
 
+func filterByTeamNameAndSort(players []*ts.Player, teamName string, rotation int) (ret []*ts.Player) {
+	// filter Available players
+	for _, p := range players {
+		if p.IsAvailable && p.PreferredTeam == teamName {
+			ret = append(ret, p)
+		}
+	}
+	if len(ret) == 0 {
+		return
+	}
+
+	// sort in descending order
+	sort.Slice(ret, func(i, j int) bool {
+		return strings.Compare(ret[i].FirstName+ret[i].LastName, ret[j].FirstName+ret[j].LastName) == 1
+	})
+
+	// rotate
+	rotation = rotation % len(ret)
+	rotation = len(ret) - rotation // rotate forward; 1st=>2nd, 2nd=>3rd
+	ret = append(ret[rotation:], ret[0:rotation]...)
+
+	return
+}
 func AssignTeamsToAvailablePlayers(players []*ts.Player, rotation int) (teamA []*ts.Player, teamB []*ts.Player) {
 	total, a, b := 0, 0, 0
 
@@ -87,30 +110,6 @@ func AssignTeamsToAvailablePlayers(players []*ts.Player, rotation int) (teamA []
 
 	teamA = filterByTeamNameAndSort(players, "Avengers", rotation)
 	teamB = filterByTeamNameAndSort(players, "Defenders", rotation)
-	return
-}
-
-func filterByTeamNameAndSort(players []*ts.Player, teamName string, rotation int) (ret []*ts.Player) {
-	// filter Available players
-	for _, p := range players {
-		if p.IsAvailable && p.PreferredTeam == teamName {
-			ret = append(ret, p)
-		}
-	}
-	if len(ret) == 0 {
-		return
-	}
-
-	// sort in descending order
-	sort.Slice(ret, func(i, j int) bool {
-		return strings.Compare(ret[i].FirstName+ret[i].LastName, ret[j].FirstName+ret[j].LastName) == 1
-	})
-
-	// rotate
-	rotation = rotation % len(ret)
-	rotation = len(ret) - rotation // rotate forward; 1st=>2nd, 2nd=>3rd
-	ret = append(ret[rotation:], ret[0:rotation]...)
-
 	return
 }
 
