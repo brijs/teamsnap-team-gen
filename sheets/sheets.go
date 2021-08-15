@@ -185,11 +185,11 @@ func (s *Service) GetPreferredTeam(players []*ts.Player) {
 	if len(resp.Values) == 0 {
 		fmt.Println("No data found.")
 	} else {
-		fmt.Println("Name, Name, Team")
+		// fmt.Println("Name, Name, Team")
 		for _, row := range resp.Values {
 			// Print columns A through C, which correspond to indices 0 and 4.
 			if len(row) > 2 {
-				fmt.Printf("%s, %s, %s\n", row[0], row[1], row[2])
+				// fmt.Printf("%s, %s, %s\n", row[0], row[1], row[2])
 				key := row[0].(string) + " " + row[1].(string)
 				if temp[key] != nil {
 					temp[key].PreferredTeam = row[2].(string)
@@ -208,12 +208,19 @@ func (s *Service) GetPreferredTeam(players []*ts.Player) {
 func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*ts.Player, volunteers []*ts.Player) {
 	ctx := context.Background()
 
+	rangeData := "NextMatch!A1:Z1000"
+	values := [][]interface{}{}
+
+	// First Clear Data
+	rb1 := &sheets.ClearValuesRequest{}
+	_, err := s.srv.Spreadsheets.Values.Clear(spreadsheetID, rangeData, rb1).Context(ctx).Do()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	rb := &sheets.BatchUpdateValuesRequest{
 		ValueInputOption: "USER_ENTERED",
 	}
-
-	rangeData := "NextMatch!A1:Z1000"
-	values := [][]interface{}{}
 
 	// Match
 	values = append(values, []interface{}{nextMatch.LeagueName})
@@ -251,7 +258,7 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 		Range:  rangeData,
 		Values: values,
 	})
-	_, err := s.srv.Spreadsheets.Values.BatchUpdate(spreadsheetID, rb).Context(ctx).Do()
+	_, err = s.srv.Spreadsheets.Values.BatchUpdate(spreadsheetID, rb).Context(ctx).Do()
 	if err != nil {
 		log.Fatal(err)
 	}

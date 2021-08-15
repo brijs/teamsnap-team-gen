@@ -65,6 +65,9 @@ func getRotation(e ts.Event, teamRotationOffset int) int {
 	duration := t.Sub(f)
 	rotation := int(math.Ceil(float64(duration.Hours() / (24 * 7))))
 	fmt.Println("Team Rotation offset = ", rotation)
+	if rotation < 0 {
+		return 0
+	}
 	return rotation
 }
 
