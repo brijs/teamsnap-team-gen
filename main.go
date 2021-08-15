@@ -87,6 +87,6 @@ func main() {
 	printDebugInfo(volunteers)
 
 	// 8. Format / publish to spreadsheet
-	sheetsService.PublishMatch(nextMatch, teamA, teamB, volunteers, teamAName, teamBName)
+	sheetsService.PublishMatch(nextMatch, teamA, teamB, volunteers, groupName, teamAName, teamBName)
 
 }

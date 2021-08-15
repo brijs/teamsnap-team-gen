@@ -48,10 +48,10 @@ func NewService() *Service {
 	return s
 }
 
-func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*ts.Player, volunteers []*ts.Player, teamAName string, teamBName string) {
+func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*ts.Player, volunteers []*ts.Player, groupName string, teamAName string, teamBName string) {
 	ctx := context.Background()
 
-	rangeData := "NextMatch!A1:Z1000"
+	rangeData := groupName + "_Match!A1:Z1000"
 	values := [][]interface{}{}
 
 	// First Clear Data

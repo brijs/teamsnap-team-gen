@@ -20,10 +20,6 @@ var (
 	}
 )
 
-func getTeamInfoRangeName(teamName string) string {
-	return teamName + "_Info"
-}
-
 func getTeamSnapToken() string {
 	val, ok := os.LookupEnv("TEAMSNAP_TOKEN")
 	if !ok {
