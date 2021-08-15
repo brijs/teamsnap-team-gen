@@ -2,10 +2,11 @@ package ts
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // type Id uint64
@@ -32,7 +33,7 @@ type Event struct {
 }
 
 func (c *Client) GetAllPlayersInTeam(teamId int) (players []*Player, err error) {
-	fmt.Println("GetAllPlayersInTeam")
+	log.Info("GetAllPlayersInTeam")
 
 	// test event
 	req, err := http.NewRequest("GET", c.baseURL+fmt.Sprintf("members/search?team_id=%d", teamId), nil)
@@ -54,7 +55,7 @@ func (c *Client) GetAllPlayersInTeam(teamId int) (players []*Player, err error) 
 }
 
 func (c *Client) GetUpcomingEvent(teamId int, date time.Time) (e Event, err error) {
-	fmt.Println("GetUpcomingEvent")
+	log.Info("GetUpcomingEvent")
 
 	req, err := http.NewRequest("GET", c.baseURL+fmt.Sprintf("/events/search?started_after=%s&page_size=1&team_id=%d", date.Format("2006-01-02T15:04"), teamId), nil)
 	if err != nil {
@@ -75,7 +76,7 @@ func (c *Client) GetUpcomingEvent(teamId int, date time.Time) (e Event, err erro
 }
 
 func (c *Client) GetAvailability(eventId uint64, players []*Player) (err error) {
-	fmt.Println("GetAvailability")
+	log.Info("GetAvailability")
 
 	// Create a new request using http
 	req, err := http.NewRequest("GET", c.baseURL+"availabilities/search?event_id="+strconv.FormatUint(uint64(eventId), 10), nil)
@@ -99,7 +100,7 @@ func (c *Client) GetAvailability(eventId uint64, players []*Player) (err error) 
 
 // https://api.teamsnap.com/v3/assignments/search?event_id=246172835&team_id=6892639
 func (c *Client) GetAssignments(eventId uint64, teamId int, players []*Player) (err error) {
-	fmt.Println("GetAssignments")
+	log.Info("GetAssignments")
 
 	// Create a new request using http
 	req, err := http.NewRequest("GET", fmt.Sprintf(c.baseURL+"assignments/search?event_id=%d&team_id=%d", eventId, teamId), nil)

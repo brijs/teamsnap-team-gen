@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"time"
 
 	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -59,12 +59,12 @@ func getRotation(e ts.Event, teamRotationOffset int) int {
 	t, _ := time.Parse(timeFormat, dStr)
 	f, _ := time.Parse(timeFormat, refDateStr)
 
-	// fmt.Println(dStr, refDateStr, t, f)
+	log.Trace(dStr, refDateStr, t, f)
 
 	// count number of weeks since Aug 8
 	duration := t.Sub(f)
 	rotation := int(math.Ceil(float64(duration.Hours() / (24 * 7))))
-	fmt.Println("Team Rotation offset = ", rotation)
+	log.Debug("Team Rotation offset = ", rotation)
 	if rotation < 0 {
 		return 0
 	}
@@ -72,8 +72,8 @@ func getRotation(e ts.Event, teamRotationOffset int) int {
 }
 
 func printDebugInfo(players []*ts.Player) {
-	fmt.Printf("Players len=%d\n", len(players))
+	log.Debug("Players len=%d\n", len(players))
 	for _, p := range players {
-		fmt.Printf("%+v\n", *p)
+		log.Debug("%+v\n", *p)
 	}
 }

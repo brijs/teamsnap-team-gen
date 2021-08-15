@@ -1,12 +1,12 @@
 package teamgen
 
 import (
-	"fmt"
 	"math"
 	"sort"
 	"strings"
 
 	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
+	log "github.com/sirupsen/logrus"
 )
 
 type adj struct {
@@ -64,7 +64,7 @@ func filterByTeamNameAndSort(players []*ts.Player, teamName string, rotation int
 	return
 }
 func AssignTeamsToAvailablePlayers(players []*ts.Player, rotation int, teamAName string, teamBName string) (teamA []*ts.Player, teamB []*ts.Player) {
-	fmt.Println("AssignTeamsToAvailablePlayers")
+	log.Info("AssignTeamsToAvailablePlayers")
 	total, a, b := 0, 0, 0
 
 	// get current team counts
@@ -115,7 +115,7 @@ func AssignTeamsToAvailablePlayers(players []*ts.Player, rotation int, teamAName
 }
 
 func GetVolunteers(players []*ts.Player) (ret []*ts.Player) {
-	fmt.Println("GetVolunteers")
+	log.Info("GetVolunteers")
 
 	// filter Available players
 	for _, p := range players {

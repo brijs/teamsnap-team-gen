@@ -1,12 +1,12 @@
 package sheets
 
 import (
-	"fmt"
 	"io/ioutil"
-	"log"
+
 	"time"
 
 	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/sheets/v4"
@@ -49,7 +49,7 @@ func NewService() *Service {
 }
 
 func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*ts.Player, volunteers []*ts.Player, groupName string, teamAName string, teamBName string) {
-	fmt.Println("PublishMatch")
+	log.Info("PublishMatch")
 	ctx := context.Background()
 
 	rangeData := groupName + "_Match!A1:Z1000"
@@ -109,7 +109,7 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 }
 
 func (s *Service) GetPreferredTeam(teamName string, players []*ts.Player) {
-	fmt.Println("GetPreferredTeamMappings")
+	log.Info("GetPreferredTeamMappings")
 	ctx := context.Background()
 
 	readRange := getPreferredTeamRangeName(teamName)
@@ -126,20 +126,20 @@ func (s *Service) GetPreferredTeam(teamName string, players []*ts.Player) {
 	}
 
 	if len(resp.Values) == 0 {
-		fmt.Println("No data found.")
+		log.Warn("No data found.")
 	} else {
 		// fmt.Println("Name, Name, Team")
 		for _, row := range resp.Values {
 			// Print columns A through C, which correspond to indices 0 and 4.
 			if len(row) > 2 {
-				// fmt.Printf("%s, %s, %s\n", row[0], row[1], row[2])
+				log.Trace("%s, %s, %s\n", row[0], row[1], row[2])
 				key := row[0].(string) + " " + row[1].(string)
 				if temp[key] != nil {
 					temp[key].PreferredTeam = row[2].(string)
 				}
 			}
 			if len(row) == 2 { // no mappings
-				// fmt.Printf("%s, %s\n", row[0], row[1])
+				log.Trace("%s, %s\n", row[0], row[1])
 			}
 
 		}
@@ -149,7 +149,7 @@ func (s *Service) GetPreferredTeam(teamName string, players []*ts.Player) {
 }
 
 func (s *Service) GetTeamInfo(teamName string) (teamAName string, teamBName string) {
-	fmt.Println("GetTeamInfo")
+	log.Info("GetTeamInfo")
 	ctx := context.Background()
 
 	readRange := getTeamInfoRangeName(teamName)
@@ -160,7 +160,7 @@ func (s *Service) GetTeamInfo(teamName string) (teamAName string, teamBName stri
 
 	// build a map for all players for quick lookup
 	if len(resp.Values) == 0 {
-		fmt.Println("No data found.")
+		log.Warn("No data found.")
 	}
 	if len(resp.Values) < 3 || len(resp.Values[1]) < 2 || len(resp.Values[2]) < 2 {
 		log.Fatalln("TeamInfo Range not found or missing rows.")

@@ -1,16 +1,16 @@
 package ts
 
 import (
-	"fmt"
 	"time"
 
 	cj "github.com/brijs/teamsnap-team-gen/collectionjson"
+	log "github.com/sirupsen/logrus"
 )
 
 func mapToEvent(d []cj.DataType) Event {
 	e := Event{}
 	for _, v := range d {
-		// fmt.Println(v.Name, "=>", v.Value)
+		log.Trace(v.Name, "=>", v.Value)
 		switch n := v.Name; n {
 		case "id":
 			e.Id = uint64(v.Value.(float64))
@@ -34,7 +34,7 @@ func mapToEvent(d []cj.DataType) Event {
 			t, err := time.Parse("2006-01-02T15:04:05Z07:00", v.Value.(string))
 
 			if err != nil {
-				fmt.Println(err)
+				log.Error(err)
 			}
 			e.StartDate = t
 		case "opponent_name":
@@ -51,7 +51,7 @@ func mapToPlayers(i []cj.ItemType) []*Player {
 		p, isPlayer := Player{}, true
 
 		for _, v := range d.Data {
-			// fmt.Println(v.Name, "=>", v.Value)
+			log.Trace(v.Name, "=>", v.Value)
 			switch n := v.Name; n {
 			case "id":
 				p.Id = uint64(v.Value.(float64))
@@ -63,7 +63,7 @@ func mapToPlayers(i []cj.ItemType) []*Player {
 			case "is_non_player":
 				isPlayer = !v.Value.(bool)
 			case "status_code":
-				// fmt.Printf(v.Name, "%T %v=>\n", v.Value, v.Value)
+				log.Trace(v.Name, "%T %v=>\n", v.Value, v.Value)
 				p.IsAvailable = v.Value != nil && v.Value.(float64) != 0
 			}
 		}
@@ -86,13 +86,13 @@ func mapAvailabilityToPlayers(i []cj.ItemType, players []*Player) {
 	for _, d := range i {
 		p := Player{}
 		for _, v := range d.Data {
-			// fmt.Println(v.Name, "=>", v.Value)
+			log.Trace(v.Name, "=>", v.Value)
 			switch n := v.Name; n {
 			case "member_id":
 				p.Id = uint64(v.Value.(float64))
 				// p.Id = v.Value.(string)
 			case "status_code":
-				// fmt.Printf(v.Name, "%T %v=>\n", v.Value, v.Value)
+				log.Trace(v.Name, "%T %v=>\n", v.Value, v.Value)
 				p.IsAvailable = v.Value != nil && v.Value.(float64) != 0
 			}
 		}
@@ -100,7 +100,7 @@ func mapAvailabilityToPlayers(i []cj.ItemType, players []*Player) {
 		if temp[p.Id] != nil {
 			temp[p.Id].IsAvailable = p.IsAvailable
 		} else {
-			//fmt.Printf("WARN: couldn't update availability info for %+v\n", p)
+			log.Trace("WARN: couldn't update availability info for %+v\n", p)
 		}
 
 	}
@@ -117,7 +117,7 @@ func mapAssignmentsToPlayers(i []cj.ItemType, players []*Player) {
 	for _, d := range i {
 		p := Player{}
 		for _, v := range d.Data {
-			// fmt.Println(v.Name, "=>", v.Value)
+			log.Trace(v.Name, "=>", v.Value)
 			switch n := v.Name; n {
 			case "member_id":
 				p.Id = uint64(v.Value.(float64))
@@ -136,7 +136,7 @@ func mapAssignmentsToPlayers(i []cj.ItemType, players []*Player) {
 			tempP.VolunteerDesc = p.VolunteerDesc
 			tempP.VolunteerPosition = p.VolunteerPosition
 		} else {
-			fmt.Printf("WARN: couldn't update assignment info for %+v\n", p)
+			log.Warn("WARN: couldn't update assignment info for %+v\n", p)
 		}
 
 	}
