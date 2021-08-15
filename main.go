@@ -20,14 +20,14 @@ var Usage = func() {
 func main() {
 	// flags
 	var (
-		teamName           string    = "IntA"
+		groupName          string    = "IntA"
 		date               time.Time = time.Now()
 		err                error
 		opsNewSheet        bool
 		teamRotationOffset int
 	)
 
-	enumFlag(&teamName, "team", []string{"IntA", "IntB", "IntC", "IntD"}, "Specify one of the valid team names (IntA|IntB|IntC|IntD)\n")
+	enumFlag(&groupName, "group", []string{"IntA", "IntB", "IntC", "IntD"}, "Specify one of the valid team names (IntA|IntB|IntC|IntD)\n")
 	flag.Func("date", "Specify reference date (eg 2021/08/14). The script will find the first upcoming match after that date", func(flagValue string) error {
 		layout := "2006/01/02"
 		if date, err = time.Parse(layout, flagValue); err != nil {
@@ -43,8 +43,8 @@ func main() {
 
 	flag.Parse()
 
-	teamId := teamNameLookup[teamName]
-	fmt.Println("Running for team = (", teamId, teamName, "), for date=", date)
+	teamId := teamNameLookup[groupName]
+	fmt.Println("Running for Teamsnap Team = (", teamId, groupName, "), for date=", date)
 
 	if opsNewSheet {
 		log.Println("Creating a new sheet & exiting")
@@ -73,11 +73,12 @@ func main() {
 
 	sheetsService := sheets.NewService()
 	// 5. Get Stick team pref
-	sheetsService.GetPreferredTeam(players)
+	sheetsService.GetPreferredTeam(groupName, players)
+	teamAName, teamBName := sheetsService.GetTeamInfo(groupName)
 	// printDebugInfo(players)
 
 	// 6. Split into teams
-	teamA, teamB := teamgen.AssignTeamsToAvailablePlayers(players, getRotation(nextMatch, teamRotationOffset))
+	teamA, teamB := teamgen.AssignTeamsToAvailablePlayers(players, getRotation(nextMatch, teamRotationOffset), teamAName, teamBName)
 	printDebugInfo(teamA)
 	printDebugInfo(teamB)
 
@@ -86,6 +87,6 @@ func main() {
 	printDebugInfo(volunteers)
 
 	// 8. Format / publish to spreadsheet
-	sheetsService.PublishMatch(nextMatch, teamA, teamB, volunteers)
+	sheetsService.PublishMatch(nextMatch, teamA, teamB, volunteers, teamAName, teamBName)
 
 }

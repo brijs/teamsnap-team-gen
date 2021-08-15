@@ -73,3 +73,11 @@ func saveToken(path string, token *oauth2.Token) {
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
 }
+
+func getPreferredTeamRangeName(teamName string) string {
+	return teamName + "_PreferredTeam"
+}
+
+func getTeamInfoRangeName(teamName string) string {
+	return teamName + "_Info"
+}

@@ -48,7 +48,7 @@ func NewService() *Service {
 	return s
 }
 
-func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*ts.Player, volunteers []*ts.Player) {
+func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*ts.Player, volunteers []*ts.Player, teamAName string, teamBName string) {
 	ctx := context.Background()
 
 	rangeData := "NextMatch!A1:Z1000"
@@ -84,14 +84,14 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 	values = append(values, []interface{}{""})
 
 	// team A
-	values = append(values, []interface{}{"Team Avengers", "Batting Order", "Bowling Order"})
+	values = append(values, []interface{}{"Team " + teamAName, "Batting Order", "Bowling Order"})
 	for i, p := range teamA {
 		values = append(values, []interface{}{p.FirstName + " " + p.LastName, i + 1, len(teamA) - i})
 	}
 	values = append(values, []interface{}{""})
 
 	// team B
-	values = append(values, []interface{}{"Team Defenders", "Batting Order", "Bowling Order"})
+	values = append(values, []interface{}{"Team " + teamBName, "Batting Order", "Bowling Order"})
 	for i, p := range teamB {
 		values = append(values, []interface{}{p.FirstName + " " + p.LastName, i + 1, len(teamA) - i})
 	}
@@ -107,10 +107,10 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 	}
 }
 
-func (s *Service) GetPreferredTeam(players []*ts.Player) {
+func (s *Service) GetPreferredTeam(teamName string, players []*ts.Player) {
 	ctx := context.Background()
 
-	readRange := "IntA_PreferredTeam"
+	readRange := getPreferredTeamRangeName(teamName)
 	resp, err := s.srv.Spreadsheets.Values.Get(spreadsheetID, readRange).Context(ctx).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve data from sheet: %v", err)
@@ -144,6 +144,27 @@ func (s *Service) GetPreferredTeam(players []*ts.Player) {
 	}
 
 	return
+}
+
+func (s *Service) GetTeamInfo(teamName string) (teamAName string, teamBName string) {
+	ctx := context.Background()
+
+	readRange := getTeamInfoRangeName(teamName)
+	resp, err := s.srv.Spreadsheets.Values.Get(spreadsheetID, readRange).Context(ctx).Do()
+	if err != nil {
+		log.Fatalf("Unable to retrieve data from sheet: %v", err)
+	}
+
+	// build a map for all players for quick lookup
+	if len(resp.Values) == 0 {
+		fmt.Println("No data found.")
+	}
+	if len(resp.Values) < 3 || len(resp.Values[1]) < 2 || len(resp.Values[2]) < 2 {
+		log.Fatalln("TeamInfo Range not found or missing rows.")
+	}
+
+	return resp.Values[1][1].(string), resp.Values[2][1].(string)
+
 }
 
 // General Sheets API Usage Example

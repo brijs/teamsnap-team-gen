@@ -63,15 +63,15 @@ func filterByTeamNameAndSort(players []*ts.Player, teamName string, rotation int
 
 	return
 }
-func AssignTeamsToAvailablePlayers(players []*ts.Player, rotation int) (teamA []*ts.Player, teamB []*ts.Player) {
+func AssignTeamsToAvailablePlayers(players []*ts.Player, rotation int, teamAName string, teamBName string) (teamA []*ts.Player, teamB []*ts.Player) {
 	total, a, b := 0, 0, 0
 
 	// get current team counts
 	for _, p := range players {
 		if p.IsAvailable {
-			if p.PreferredTeam == "Avengers" {
+			if p.PreferredTeam == teamAName {
 				a, total = a+1, total+1
-			} else if p.PreferredTeam == "Defenders" {
+			} else if p.PreferredTeam == teamBName {
 				b, total = b+1, total+1
 			} else {
 				total = total + 1
@@ -85,31 +85,31 @@ func AssignTeamsToAvailablePlayers(players []*ts.Player, rotation int) (teamA []
 	// do the team adjustments
 	for _, p := range players {
 		if p.IsAvailable {
-			if p.PreferredTeam == "Avengers" {
+			if p.PreferredTeam == teamAName {
 				if adj.a2b > 0 {
-					p.PreferredTeam = "Defenders"
+					p.PreferredTeam = teamBName
 					adj.a2b = adj.a2b - 1
 				}
-			} else if p.PreferredTeam == "Defenders" {
+			} else if p.PreferredTeam == teamBName {
 				if adj.b2a > 0 {
-					p.PreferredTeam = "Avengers"
+					p.PreferredTeam = teamAName
 					adj.b2a = adj.b2a - 1
 				}
 
 			} else {
 				if adj.n2a > 0 {
-					p.PreferredTeam = "Avengers"
+					p.PreferredTeam = teamAName
 					adj.n2a = adj.n2a - 1
 				} else if adj.n2b > 0 {
-					p.PreferredTeam = "Defenders"
+					p.PreferredTeam = teamBName
 					adj.n2b = adj.n2b - 1
 				}
 			}
 		}
 	}
 
-	teamA = filterByTeamNameAndSort(players, "Avengers", rotation)
-	teamB = filterByTeamNameAndSort(players, "Defenders", rotation)
+	teamA = filterByTeamNameAndSort(players, teamAName, rotation)
+	teamB = filterByTeamNameAndSort(players, teamBName, rotation)
 	return
 }
 

@@ -14,11 +14,15 @@ import (
 var (
 	teamNameLookup = map[string]int{
 		"IntA": 6892639,
-		"IntB": 6892639,
-		"IntC": 6892639,
-		"IntD": 6892639,
+		"IntB": 6892639, // TODO
+		"IntC": 6892639, // TODO
+		"IntD": 6892639, // TODO
 	}
 )
+
+func getTeamInfoRangeName(teamName string) string {
+	return teamName + "_Info"
+}
 
 func getTeamSnapToken() string {
 	val, ok := os.LookupEnv("TEAMSNAP_TOKEN")
