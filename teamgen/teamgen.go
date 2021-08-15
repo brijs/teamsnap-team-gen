@@ -64,6 +64,7 @@ func filterByTeamNameAndSort(players []*ts.Player, teamName string, rotation int
 	return
 }
 func AssignTeamsToAvailablePlayers(players []*ts.Player, rotation int, teamAName string, teamBName string) (teamA []*ts.Player, teamB []*ts.Player) {
+	fmt.Println("AssignTeamsToAvailablePlayers")
 	total, a, b := 0, 0, 0
 
 	// get current team counts

@@ -49,6 +49,7 @@ func NewService() *Service {
 }
 
 func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*ts.Player, volunteers []*ts.Player, groupName string, teamAName string, teamBName string) {
+	fmt.Println("PublishMatch")
 	ctx := context.Background()
 
 	rangeData := groupName + "_Match!A1:Z1000"
@@ -108,6 +109,7 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 }
 
 func (s *Service) GetPreferredTeam(teamName string, players []*ts.Player) {
+	fmt.Println("GetPreferredTeamMappings")
 	ctx := context.Background()
 
 	readRange := getPreferredTeamRangeName(teamName)
@@ -136,8 +138,8 @@ func (s *Service) GetPreferredTeam(teamName string, players []*ts.Player) {
 					temp[key].PreferredTeam = row[2].(string)
 				}
 			}
-			if len(row) == 2 {
-				fmt.Printf("%s, %s\n", row[0], row[1])
+			if len(row) == 2 { // no mappings
+				// fmt.Printf("%s, %s\n", row[0], row[1])
 			}
 
 		}
@@ -147,6 +149,7 @@ func (s *Service) GetPreferredTeam(teamName string, players []*ts.Player) {
 }
 
 func (s *Service) GetTeamInfo(teamName string) (teamAName string, teamBName string) {
+	fmt.Println("GetTeamInfo")
 	ctx := context.Background()
 
 	readRange := getTeamInfoRangeName(teamName)

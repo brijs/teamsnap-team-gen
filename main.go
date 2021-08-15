@@ -27,7 +27,7 @@ func main() {
 		teamRotationOffset int
 	)
 
-	enumFlag(&groupName, "group", []string{"IntA", "IntB", "IntC", "IntD"}, "Specify one of the valid team names (IntA|IntB|IntC|IntD)\n")
+	enumFlag(&groupName, "groupname", []string{"IntA", "IntB", "IntC", "IntD"}, "Specify one of the valid team names (IntA|IntB|IntC|IntD)")
 	flag.Func("date", "Specify reference date (eg 2021/08/14). The script will find the first upcoming match after that date", func(flagValue string) error {
 		layout := "2006/01/02"
 		if date, err = time.Parse(layout, flagValue); err != nil {
@@ -36,8 +36,8 @@ func main() {
 		}
 		return err
 	})
-	flag.BoolVar(&opsNewSheet, "newSheet", false, "Create a new Google Spreadsheet. (admin usage only)")
 	flag.IntVar(&teamRotationOffset, "rotateTeamOrder", -1, "Enter a positive integer (optional)")
+	flag.BoolVar(&opsNewSheet, "newSheet", false, "Create a new Google Spreadsheet. (admin usage only)")
 
 	flag.Usage = Usage
 
@@ -57,7 +57,7 @@ func main() {
 
 	// 1. Get  all players in team
 	players, _ := tsClient.GetAllPlayersInTeam(teamId)
-	printDebugInfo(players)
+	// printDebugInfo(players)
 
 	// 2. Get Upcoming match
 	nextMatch, _ := tsClient.GetUpcomingEvent(teamId, date)
@@ -79,14 +79,15 @@ func main() {
 
 	// 6. Split into teams
 	teamA, teamB := teamgen.AssignTeamsToAvailablePlayers(players, getRotation(nextMatch, teamRotationOffset), teamAName, teamBName)
-	printDebugInfo(teamA)
-	printDebugInfo(teamB)
+	// printDebugInfo(teamA)
+	// printDebugInfo(teamB)
 
 	// 7. Get Volunteers
 	volunteers := teamgen.GetVolunteers(players)
-	printDebugInfo(volunteers)
+	// printDebugInfo(volunteers)
 
 	// 8. Format / publish to spreadsheet
 	sheetsService.PublishMatch(nextMatch, teamA, teamB, volunteers, groupName, teamAName, teamBName)
 
+	fmt.Println("Successfully completed generated teams for ", groupName)
 }

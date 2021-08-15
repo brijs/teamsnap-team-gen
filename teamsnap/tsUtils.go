@@ -100,7 +100,7 @@ func mapAvailabilityToPlayers(i []cj.ItemType, players []*Player) {
 		if temp[p.Id] != nil {
 			temp[p.Id].IsAvailable = p.IsAvailable
 		} else {
-			fmt.Printf("WARN: couldn't update availability info for %+v\n", p)
+			//fmt.Printf("WARN: couldn't update availability info for %+v\n", p)
 		}
 
 	}

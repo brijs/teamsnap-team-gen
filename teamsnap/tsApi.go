@@ -56,8 +56,6 @@ func (c *Client) GetAllPlayersInTeam(teamId int) (players []*Player, err error) 
 func (c *Client) GetUpcomingEvent(teamId int, date time.Time) (e Event, err error) {
 	fmt.Println("GetUpcomingEvent")
 
-	log.Println(c.baseURL + fmt.Sprintf("/events/search?started_after=%s&page_size=1&team_id=%d", date.Format("2006-01-02T15:04"), teamId))
-
 	req, err := http.NewRequest("GET", c.baseURL+fmt.Sprintf("/events/search?started_after=%s&page_size=1&team_id=%d", date.Format("2006-01-02T15:04"), teamId), nil)
 	if err != nil {
 		log.Fatalln("Error creating Request.\n[ERROR] -", err)
