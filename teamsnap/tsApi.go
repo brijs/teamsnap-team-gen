@@ -13,11 +13,14 @@ import (
 // type Id uint64
 
 type Player struct {
-	Id            uint64 // string //uint64
-	FirstName     string
-	LastName      string
-	PreferredTeam string
-	Available     bool
+	Id                uint64 // string //uint64
+	FirstName         string
+	LastName          string
+	PreferredTeam     string
+	IsAvailable       bool
+	IsVolunteer       bool
+	VolunteerDesc     string
+	VolunteerPosition int
 }
 
 type Event struct {
@@ -85,7 +88,7 @@ func mapToPlayers(i []cj.ItemType) []*Player {
 				isPlayer = !v.Value.(bool)
 			case "status_code":
 				// fmt.Printf(v.Name, "%T %v=>\n", v.Value, v.Value)
-				p.Available = v.Value != nil && v.Value.(float64) != 0
+				p.IsAvailable = v.Value != nil && v.Value.(float64) != 0
 			}
 		}
 		if isPlayer {
@@ -114,12 +117,50 @@ func mapAvailabilityToPlayers(i []cj.ItemType, players []*Player) {
 				// p.Id = v.Value.(string)
 			case "status_code":
 				// fmt.Printf(v.Name, "%T %v=>\n", v.Value, v.Value)
-				p.Available = v.Value != nil && v.Value.(float64) != 0
+				p.IsAvailable = v.Value != nil && v.Value.(float64) != 0
 			}
 		}
 		// update back in the players slice
 		if temp[p.Id] != nil {
-			temp[p.Id].Available = p.Available
+			temp[p.Id].IsAvailable = p.IsAvailable
+		} else {
+			fmt.Printf("WARN: couldn't update availability info for %+v\n", p)
+		}
+
+	}
+
+}
+func mapAssignmentsToPlayers(i []cj.ItemType, players []*Player) {
+	// build a map for all players for quick lookup
+	var temp map[uint64]*Player = make(map[uint64]*Player)
+	for _, p := range players {
+		// p := p
+		temp[p.Id] = p
+	}
+
+	for _, d := range i {
+		p := Player{}
+		for _, v := range d.Data {
+			// fmt.Println(v.Name, "=>", v.Value)
+			switch n := v.Name; n {
+			case "member_id":
+				p.Id = uint64(v.Value.(float64))
+				p.IsVolunteer = true
+				// p.Id = v.Value.(string)
+			case "position":
+				p.VolunteerPosition = int(v.Value.(float64))
+			case "description":
+				p.VolunteerDesc = v.Value.(string)
+			}
+		}
+		// update back in the players slice
+		if temp[p.Id] != nil {
+			tempP := temp[p.Id]
+			tempP.IsVolunteer = p.IsVolunteer
+			tempP.VolunteerDesc = p.VolunteerDesc
+			tempP.VolunteerPosition = p.VolunteerPosition
+		} else {
+			fmt.Printf("WARN: couldn't update assignment info for %+v\n", p)
 		}
 
 	}
@@ -213,6 +254,30 @@ func (c *Client) GetAvailability(eventId uint64, players []*Player) (err error) 
 	}
 
 	mapAvailabilityToPlayers(res.Collection.Items, players)
+
+	return err
+}
+
+// https://api.teamsnap.com/v3/assignments/search?event_id=246172835&team_id=6892639
+func (c *Client) GetAssignments(eventId uint64, teamId int, players []*Player) (err error) {
+	fmt.Println("GetAssignments")
+
+	// Create a new request using http
+	req, err := http.NewRequest("GET", fmt.Sprintf(c.baseURL+"assignments/search?event_id=%d&team_id=%d", eventId, teamId), nil)
+	if err != nil {
+		log.Fatalln("Error creating Request.\n[ERROR] -", err)
+	}
+
+	res, err := c.sendRequest(req)
+	if err != nil {
+		log.Fatalln("Error on response.\n[ERROR] -", err)
+	}
+
+	if len(res.Collection.Items) == 0 {
+		return fmt.Errorf("No Players were not found")
+	}
+
+	mapAssignmentsToPlayers(res.Collection.Items, players)
 
 	return err
 }

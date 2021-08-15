@@ -85,6 +85,8 @@ func main() {
 	printDebugInfo(players)
 
 	// 5. Get Volunteer assignments
+	tsClient.GetAssignments(nextMatch.Id, teamId, players)
+	printDebugInfo(players)
 
 	// 4. Split into teams
 
