@@ -7,39 +7,9 @@ import (
 	"os"
 	"time"
 
+	sheets "github.com/brijs/teamsnap-team-gen/sheets"
+	teamgen "github.com/brijs/teamsnap-team-gen/teamgen"
 	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
-)
-
-func getTeamSnapToken() string {
-	val, ok := os.LookupEnv("TEAMSNAP_TOKEN")
-	if !ok {
-		log.Fatalln("TEAMSNAP_TOKEN is not set")
-		return val
-	} else {
-		return val
-	}
-}
-
-func enumFlag(target *string, name string, safelist []string, usage string) {
-	flag.Func(name, usage, func(flagValue string) error {
-		for _, allowedValue := range safelist {
-			if flagValue == allowedValue {
-				*target = flagValue
-				return nil
-			}
-		}
-
-		return fmt.Errorf("must be one of %v", safelist)
-	})
-}
-
-var (
-	teamNameLookup = map[string]int{
-		"IntA": 6892639,
-		"IntB": 6892639,
-		"IntC": 6892639,
-		"IntD": 6892639,
-	}
 )
 
 var Usage = func() {
@@ -50,9 +20,11 @@ var Usage = func() {
 func main() {
 	// flags
 	var (
-		teamName string    = "IntA"
-		date     time.Time = time.Now()
-		err      error
+		teamName           string    = "IntA"
+		date               time.Time = time.Now()
+		err                error
+		opsNewSheet        bool
+		teamRotationOffset int
 	)
 
 	enumFlag(&teamName, "team", []string{"IntA", "IntB", "IntC", "IntD"}, "Specify one of the valid team names (IntA|IntB|IntC|IntD)\n")
@@ -64,11 +36,22 @@ func main() {
 		}
 		return err
 	})
+	flag.BoolVar(&opsNewSheet, "newSheet", false, "Create a new Google Spreadsheet. (admin usage only)")
+	flag.IntVar(&teamRotationOffset, "rotateTeamOrder", -1, "Enter a positive integer (optional)")
+
 	flag.Usage = Usage
 
 	flag.Parse()
+
 	teamId := teamNameLookup[teamName]
 	fmt.Println("Running for team = (", teamId, teamName, "), for date=", date)
+
+	if opsNewSheet {
+		log.Println("Creating a new sheet & exiting")
+		url := sheets.CreateNewSheet()
+		log.Println("New Spreadsheet URL: ", url)
+		return
+	}
 
 	tsClient := ts.NewClient(getTeamSnapToken())
 
@@ -82,20 +65,27 @@ func main() {
 
 	// 3. Get Player availability
 	tsClient.GetAvailability(nextMatch.Id, players)
-	printDebugInfo(players)
+	// printDebugInfo(players)
 
-	// 5. Get Volunteer assignments
+	// 4. Get Volunteer assignments
 	tsClient.GetAssignments(nextMatch.Id, teamId, players)
-	printDebugInfo(players)
+	// printDebugInfo(players)
 
-	// 4. Split into teams
+	sheetsService := sheets.NewService()
+	// 5. Get Stick team pref
+	sheetsService.GetPreferredTeam(players)
+	// printDebugInfo(players)
 
-	// 6. Print / publish to spreadsheet
-}
+	// 6. Split into teams
+	teamA, teamB := teamgen.AssignTeamsToAvailablePlayers(players, getRotation(nextMatch, teamRotationOffset))
+	printDebugInfo(teamA)
+	printDebugInfo(teamB)
 
-func printDebugInfo(players []*ts.Player) {
-	fmt.Printf("Players len=%d\n", len(players))
-	for _, p := range players {
-		fmt.Printf("%+v\n", *p)
-	}
+	// 7. Get Volunteers
+	volunteers := teamgen.GetVolunteers(players)
+	printDebugInfo(volunteers)
+
+	// 8. Format / publish to spreadsheet
+	// sheets.PersistToSheetTest(players)
+
 }

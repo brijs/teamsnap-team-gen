@@ -19,7 +19,7 @@ func NewClient(accessToken string) *Client {
 	return &Client{
 		accessToken: accessToken,
 		HTTPClient: &http.Client{
-			Timeout: 5 * time.Minute,
+			Timeout: 15 * time.Second,
 		},
 		baseURL: "https://api.teamsnap.com/v3/",
 	}
