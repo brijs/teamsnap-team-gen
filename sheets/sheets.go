@@ -263,3 +263,28 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 		log.Fatal(err)
 	}
 }
+
+// General Sheets API Usage Example
+// -----------------------------------
+//
+// 1. Construct RequestBody
+// rb = &sheets.BatchUpdateValuesRequest{} // rb: requestBody
+//
+// 2. Append Data to rb.Data
+// rb.Data = append(rb.Data, &sheets.ValueRange{})
+//
+// 3. Call Method
+// sheetsService.Spreadsheets.Values.BatchUpdate(spreadsheetID, rb).Context(ctx).Do()
+//
+// Common Classes
+//  - sheets.XXXRequest{}    	  // ReqBody structs
+//  - Spreadsheets.Values.XXX()   // methods
+//  - sheets.ValueRange			  // Common util struct
+//
+// Methods (in sheetsService.Spreadsheets.Values) & Structs (in sheets)
+//   - BatchGet			|
+//   - BatchUpdate		| BatchUpdateValuesRequest
+//   - Clear			| ClearValuesRequest
+//   -
+
+// Note: Each Method has it's corresponding RequesBody Struct
