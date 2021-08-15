@@ -86,6 +86,6 @@ func main() {
 	printDebugInfo(volunteers)
 
 	// 8. Format / publish to spreadsheet
-	// sheets.PersistToSheetTest(players)
+	sheetsService.PublishMatch(nextMatch, teamA, teamB, volunteers)
 
 }

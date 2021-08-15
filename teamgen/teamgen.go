@@ -108,6 +108,7 @@ func filterByTeamNameAndSort(players []*ts.Player, teamName string, rotation int
 
 	// rotate
 	rotation = rotation % len(ret)
+	rotation = len(ret) - rotation // rotate forward; 1st=>2nd, 2nd=>3rd
 	ret = append(ret[rotation:], ret[0:rotation]...)
 
 	return

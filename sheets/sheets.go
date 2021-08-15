@@ -203,3 +203,54 @@ func (s *Service) GetPreferredTeam(players []*ts.Player) {
 
 	return
 }
+
+func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*ts.Player, volunteers []*ts.Player) {
+	ctx := context.Background()
+
+	rb := &sheets.BatchUpdateValuesRequest{
+		ValueInputOption: "USER_ENTERED",
+	}
+
+	rangeData := "NextMatch!A1:Z1000"
+	values := [][]interface{}{}
+
+	// Match
+	values = append(values, []interface{}{nextMatch.LeagueName})
+	values = append(values, []interface{}{"Location", nextMatch.Location})
+	values = append(values, []interface{}{"Date", nextMatch.StartDate.Local().String()})
+	values = append(values, []interface{}{"Uniform", nextMatch.Uniform})
+	values = append(values, []interface{}{"Note", nextMatch.Notes})
+
+	values = append(values, []interface{}{""})
+	values = append(values, []interface{}{""})
+
+	// Volunteer
+	for _, v := range volunteers {
+		values = append(values, []interface{}{v.VolunteerDesc, v.FirstName + " " + v.LastName})
+	}
+	values = append(values, []interface{}{""})
+	values = append(values, []interface{}{""})
+
+	// team A
+	values = append(values, []interface{}{"Team Avengers", "Batting Order", "Bowling Order"})
+	for i, p := range teamA {
+		values = append(values, []interface{}{p.FirstName + " " + p.LastName, i + 1, len(teamA) - i})
+	}
+	values = append(values, []interface{}{""})
+
+	// team B
+	values = append(values, []interface{}{"Team Defenders", "Batting Order", "Bowling Order"})
+	for i, p := range teamB {
+		values = append(values, []interface{}{p.FirstName + " " + p.LastName, i + 1, len(teamA) - i})
+	}
+	values = append(values, []interface{}{""})
+
+	rb.Data = append(rb.Data, &sheets.ValueRange{
+		Range:  rangeData,
+		Values: values,
+	})
+	_, err := s.srv.Spreadsheets.Values.BatchUpdate(spreadsheetID, rb).Context(ctx).Do()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
