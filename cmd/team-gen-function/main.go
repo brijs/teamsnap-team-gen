@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
-	tg "github.com/brijs/teamsnap-team-gen/pkg/teamgen"
+	tgf "github.com/brijs/teamsnap-team-gen"
 )
 
 func main() {
 	ctx := context.Background()
-	if err := funcframework.RegisterHTTPFunctionContext(ctx, "/teamgen/", tg.TeamGen); err != nil {
+	if err := funcframework.RegisterHTTPFunctionContext(ctx, "/teamgen/", tgf.TeamGen); err != nil {
 		log.Fatalf("funcframework.RegisterHTTPFunctionContext: %v\n", err)
 	}
 	// Use PORT environment variable, or default to 8080.

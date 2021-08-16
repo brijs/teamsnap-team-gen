@@ -1,4 +1,4 @@
-package tg
+package tgfunction
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	tg "github.com/brijs/teamsnap-team-gen/pkg/teamgen"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,6 +17,9 @@ var (
 	opsNewSheet        bool
 	teamRotationOffset int
 )
+
+// For Google Cloud Function to work, this Function
+// needs to be at the root level of the module
 
 // /teamgen?groupName=IntA&afterDate=2021-08-01&rotationOffset=1
 func TeamGen(w http.ResponseWriter, r *http.Request) {
@@ -45,8 +49,15 @@ func TeamGen(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Infof("Params: group=%s date=%v rotationOffset=%d", groupName, date, teamRotationOffset)
 
-	spreadSheetID := GenerateTeamsAndPublish(groupName, date, teamRotationOffset)
+	spreadSheetID := tg.GenerateTeamsAndPublish(groupName, date, teamRotationOffset)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	fmt.Fprintf(w, "<p>Request successfully processed</p><p>Click <a href=\"https://docs.google.com/spreadsheets/d/%s/edit#gid=660501010\">here</a> for the generated teams spreadsheet</p>", spreadSheetID)
 
 }
+
+// Test locally
+// go run cmd/team-gen-function
+// Browser=> localhost:8080/teamgen
+//
+// Deployed to GCP using
+//  gcloud functions deploy TeamGen  --runtime go113 --trigger-http --allow-unauthenticated --project team-gen-function
