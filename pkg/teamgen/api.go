@@ -21,7 +21,7 @@ var (
 	}
 )
 
-func GenerateTeamsAndPublish(groupName string, date time.Time, teamRotationOffset int) {
+func GenerateTeamsAndPublish(groupName string, date time.Time, teamRotationOffset int) string {
 	teamId := teamNameLookup[groupName]
 	log.Info("Running for Teamsnap Team = (", teamId, groupName, "), for date=", date)
 
@@ -62,6 +62,7 @@ func GenerateTeamsAndPublish(groupName string, date time.Time, teamRotationOffse
 	sheetsService.PublishMatch(nextMatch, teamA, teamB, volunteers, groupName, teamAName, teamBName)
 
 	log.Info("Successfully completed generated teams for ", groupName)
+	return sheetsService.SpreadSheetID
 }
 
 func getTeamSnapToken() string {

@@ -1,6 +1,7 @@
 # binary
 teamsnap-team-gen
 team-gen
+team-gen-function
 
 # credentials
 google_sheets_credentials.json

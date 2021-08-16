@@ -15,7 +15,7 @@ import (
 type Service struct {
 	googleAppCredFile string
 	tokFile           string
-	spreadSheetID     string
+	SpreadSheetID     string
 	srv               *sheets.Service
 }
 
@@ -24,7 +24,7 @@ func NewService() *Service {
 	s := &Service{
 		googleAppCredFile: "google_sheets_credentials.json",
 		tokFile:           "token.json",
-		spreadSheetID:     "1jJh3z_DrfJ-rktLmyXKjzhkm8K8oXXk8MZT9OL1xSM0",
+		SpreadSheetID:     "1jJh3z_DrfJ-rktLmyXKjzhkm8K8oXXk8MZT9OL1xSM0",
 	}
 
 	b, err := ioutil.ReadFile(s.googleAppCredFile)
