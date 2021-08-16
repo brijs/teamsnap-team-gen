@@ -5,7 +5,7 @@ import (
 
 	"time"
 
-	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
+	ts "github.com/brijs/teamsnap-team-gen/internal/teamsnap"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"

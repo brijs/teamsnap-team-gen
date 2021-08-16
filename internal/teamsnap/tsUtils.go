@@ -3,7 +3,7 @@ package ts
 import (
 	"time"
 
-	cj "github.com/brijs/teamsnap-team-gen/collectionjson"
+	cj "github.com/brijs/teamsnap-team-gen/internal/collectionjson"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -120,8 +120,10 @@ func mapAssignmentsToPlayers(i []cj.ItemType, players []*Player) {
 			log.Trace(v.Name, "=>", v.Value)
 			switch n := v.Name; n {
 			case "member_id":
-				p.Id = uint64(v.Value.(float64))
-				p.IsVolunteer = true
+				if v.Value != nil {
+					p.Id = uint64(v.Value.(float64))
+					p.IsVolunteer = true
+				}
 				// p.Id = v.Value.(string)
 			case "position":
 				p.VolunteerPosition = int(v.Value.(float64))

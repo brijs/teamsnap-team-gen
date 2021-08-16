@@ -8,7 +8,7 @@ $ export TEAMSNAP_TOKEN=xxx
 
 
 # Print usage
-$ ./teamsnap-team-gen --help
+$ ./team-gen --help
 
 Usage of ./teamsnap-team-gen:
  Split available players for the specified team & date for an upcoming game
@@ -27,7 +27,7 @@ Usage of ./teamsnap-team-gen:
 
 ## Example run
 ```zsh
-$ ./teamsnap-team-gen --groupname IntA
+$ ./team-gen --groupname IntA
 
 INFO[0000] Running for Teamsnap Team = (xxxx IntA), for date=2021-08-15 17:10:06.110296 -0700 PDT m=+0.019290270
 INFO[0000] GetAllPlayersInTeam
@@ -43,6 +43,10 @@ INFO[0004] PublishMatch
 INFO[0005] Successfully completed generated teams for IntA
 ```
 
+## Build
+```zsh
+go build ./cmd/team-gen
+```
 ## Output
 
 > - The generated teams are output to [this sheet](https://docs.google.com/spreadsheets/d/1jJh3z_DrfJ-rktLmyXKjzhkm8K8oXXk8MZT9OL1xSM0/edit#gid=2101538123)

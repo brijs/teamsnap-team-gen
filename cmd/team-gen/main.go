@@ -6,15 +6,27 @@ import (
 	"os"
 	"time"
 
-	sheets "github.com/brijs/teamsnap-team-gen/sheets"
-	teamgen "github.com/brijs/teamsnap-team-gen/teamgen"
-	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
+	sheets "github.com/brijs/teamsnap-team-gen/internal/sheets"
+	tg "github.com/brijs/teamsnap-team-gen/pkg/teamgen"
 	log "github.com/sirupsen/logrus"
 )
 
 var Usage = func() {
 	fmt.Fprintf(os.Stderr, "\nUsage of %s:\n Split available players for the specified team & date for an upcoming game\n\n", os.Args[0])
 	flag.PrintDefaults()
+}
+
+func enumFlag(target *string, name string, safelist []string, usage string) {
+	flag.Func(name, usage, func(flagValue string) error {
+		for _, allowedValue := range safelist {
+			if flagValue == allowedValue {
+				*target = flagValue
+				return nil
+			}
+		}
+
+		return fmt.Errorf("must be one of %v", safelist)
+	})
 }
 
 func init() {
@@ -27,6 +39,7 @@ func init() {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.DebugLevel)
 
 	// log.SetReportCaller(true)
 }
@@ -57,9 +70,6 @@ func main() {
 
 	flag.Parse()
 
-	teamId := teamNameLookup[groupName]
-	log.Info("Running for Teamsnap Team = (", teamId, groupName, "), for date=", date)
-
 	if opsNewSheet {
 		log.Info("Creating a new sheet & exiting")
 		url := sheets.CreateNewSheet()
@@ -67,41 +77,6 @@ func main() {
 		return
 	}
 
-	tsClient := ts.NewClient(getTeamSnapToken())
-
-	// 1. Get  all players in team
-	players, _ := tsClient.GetAllPlayersInTeam(teamId)
-	printDebugInfo(players)
-
-	// 2. Get Upcoming match
-	nextMatch, _ := tsClient.GetUpcomingEvent(teamId, date)
-	log.Infof("Event => %+v", nextMatch)
-
-	// 3. Get Player availability
-	tsClient.GetAvailability(nextMatch.Id, players)
-	printDebugInfo(players)
-
-	// 4. Get Volunteer assignments
-	tsClient.GetAssignments(nextMatch.Id, teamId, players)
-	printDebugInfo(players)
-
-	sheetsService := sheets.NewService()
-	// 5. Get Stick team pref
-	sheetsService.GetPreferredTeam(groupName, players)
-	teamAName, teamBName := sheetsService.GetTeamInfo(groupName)
-	printDebugInfo(players)
-
-	// 6. Split into teams
-	teamA, teamB := teamgen.AssignTeamsToAvailablePlayers(players, getRotation(nextMatch, teamRotationOffset), teamAName, teamBName)
-	printDebugInfo(teamA)
-	printDebugInfo(teamB)
-
-	// 7. Get Volunteers
-	volunteers := teamgen.GetVolunteers(players)
-	printDebugInfo(volunteers)
-
-	// 8. Format / publish to spreadsheet
-	sheetsService.PublishMatch(nextMatch, teamA, teamB, volunteers, groupName, teamAName, teamBName)
-
-	log.Info("Successfully completed generated teams for ", groupName)
+	tg.GenerateTeamsAndPublish(groupName, date, teamRotationOffset)
+	log.Info("Main done")
 }

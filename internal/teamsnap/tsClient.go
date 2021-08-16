@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	cj "github.com/brijs/teamsnap-team-gen/collectionjson"
+	cj "github.com/brijs/teamsnap-team-gen/internal/collectionjson"
 )
 
 type Client struct {

@@ -1,11 +1,11 @@
-package teamgen
+package teamsplit
 
 import (
 	"math"
 	"sort"
 	"strings"
 
-	ts "github.com/brijs/teamsnap-team-gen/teamsnap"
+	ts "github.com/brijs/teamsnap-team-gen/internal/teamsnap"
 	log "github.com/sirupsen/logrus"
 )
 
