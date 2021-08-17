@@ -24,7 +24,9 @@ const (
 // Retrieve a token, saves the token, then returns the generated client.
 func getSheetsService() (*sheets.Service, error) {
 	tok, err := tokenFromEnvOrFile(tokFile)
+	// log.Debugf("token=%+v", tok)
 	if err != nil {
+		// Do Oauth all over again
 		b, err := ioutil.ReadFile(googleAppCredFile)
 		if err != nil {
 			log.Fatalf("Unable to read google app credentials file: %v", err)
@@ -70,7 +72,7 @@ func tokenFromEnvOrFile(file string) (*oauth2.Token, error) {
 
 	// check env var first
 	tokenJSON, ok := os.LookupEnv("SHEETS_TOKEN")
-	if ok {
+	if ok && tokenJSON != "" {
 		log.Debug(("Using Sheets Token from env"))
 		err = json.NewDecoder(strings.NewReader(tokenJSON)).Decode(tok)
 	} else {
@@ -81,7 +83,6 @@ func tokenFromEnvOrFile(file string) (*oauth2.Token, error) {
 			return nil, err
 		}
 		defer f.Close()
-		tok := &oauth2.Token{}
 		err = json.NewDecoder(f).Decode(tok)
 
 	}
