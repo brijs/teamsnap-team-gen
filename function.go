@@ -25,7 +25,7 @@ var (
 func TeamGen(w http.ResponseWriter, r *http.Request) {
 	log.Info("TeamGen Function")
 
-	log.Debug("RawQuery=", r.URL.RawQuery)
+	log.Info("RawQuery=", r.URL.RawQuery)
 
 	if rGroupName := r.URL.Query().Get("groupName"); rGroupName != "" {
 		valid := false
@@ -65,7 +65,7 @@ func TeamGen(w http.ResponseWriter, r *http.Request) {
 
 	spreadSheetID := tg.GenerateTeamsAndPublish(groupName, date, teamRotationOffset)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprintf(w, "<p>Request successfully processed</p><p>Click <a href=\"https://docs.google.com/spreadsheets/d/%s/edit#gid=660501010\">here</a> for the generated teams spreadsheet</p>", spreadSheetID)
+	fmt.Fprintf(w, "<p>Request successfully processed. Generated teams for <b>%s</b> group. </p><p>Click <a href=\"https://docs.google.com/spreadsheets/d/%s/edit#gid=660501010\">here</a> for the generated teams spreadsheet</p>", groupName, spreadSheetID)
 
 }
 

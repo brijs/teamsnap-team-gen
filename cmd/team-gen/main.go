@@ -51,6 +51,7 @@ func main() {
 		date               time.Time = time.Now()
 		err                error
 		opsNewSheet        bool
+		logLevel           string
 		teamRotationOffset int
 	)
 
@@ -65,6 +66,7 @@ func main() {
 	})
 	flag.IntVar(&teamRotationOffset, "rotateTeamOrder", -1, "Enter a positive integer (optional)")
 	flag.BoolVar(&opsNewSheet, "newSheet", false, "Create a new Google Spreadsheet. (admin usage only)")
+	flag.StringVar(&logLevel, "logLevel", "info", "fatal error info debug trace")
 
 	flag.Usage = Usage
 
@@ -75,6 +77,14 @@ func main() {
 		url := sheets.CreateNewSheet()
 		log.Info("New Spreadsheet URL: ", url)
 		return
+	}
+	if logLevel != "" {
+		l, err := log.ParseLevel(logLevel)
+		if err != nil {
+			log.Fatalf("Invalid log level", err)
+		}
+		log.Info("Setting Log Level: ", logLevel)
+		log.SetLevel(l)
 	}
 
 	tg.GenerateTeamsAndPublish(groupName, date, teamRotationOffset)
