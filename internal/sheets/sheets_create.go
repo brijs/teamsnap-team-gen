@@ -2,21 +2,14 @@ package sheets
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/sheets/v4"
 )
 
 func CreateNewSheet() string {
 	ctx := context.Background()
-
-	b, err := ioutil.ReadFile("google_sheets_credentials.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
 
 	// Scopes Explained
 	//
@@ -40,13 +33,7 @@ func CreateNewSheet() string {
 
 	deleteTokenFile()
 
-	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/drive.file")
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	client := getClient(config)
-
-	srv, err := sheets.New(client)
+	srv, err := getSheetsService()
 	if err != nil {
 		log.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}

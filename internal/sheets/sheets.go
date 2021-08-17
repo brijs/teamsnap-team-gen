@@ -1,14 +1,11 @@
 package sheets
 
 import (
-	"io/ioutil"
-
 	"time"
 
 	ts "github.com/brijs/teamsnap-team-gen/internal/teamsnap"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
 	"google.golang.org/api/sheets/v4"
 )
 
@@ -26,21 +23,8 @@ func NewService() *Service {
 		tokFile:           "token.json",
 		SpreadSheetID:     "1jJh3z_DrfJ-rktLmyXKjzhkm8K8oXXk8MZT9OL1xSM0",
 	}
-
-	b, err := ioutil.ReadFile(s.googleAppCredFile)
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
-
-	// If modifying these scopes, delete your previously saved token.json.
-	// only scoped to edit files created by Teamsnap-srca app
-	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/drive.file")
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	client := getClient(config)
-
-	s.srv, err = sheets.New(client)
+	var err error
+	s.srv, err = getSheetsService()
 	if err != nil {
 		log.Fatalf("Unable to retrieve Sheets client: %v", err)
 	}

@@ -3,31 +3,50 @@ package sheets
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"io/ioutil"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 )
 
 const (
-	tokFile       string = "token.json"
-	spreadsheetID string = "1jJh3z_DrfJ-rktLmyXKjzhkm8K8oXXk8MZT9OL1xSM0"
+	googleAppCredFile string = "google_sheets_credentials.json"
+	tokFile           string = "token.json"
+	spreadsheetID     string = "1jJh3z_DrfJ-rktLmyXKjzhkm8K8oXXk8MZT9OL1xSM0"
 )
 
 // Retrieve a token, saves the token, then returns the generated client.
-func getClient(config *oauth2.Config) *http.Client {
-	tok, err := tokenFromFile(tokFile)
+func getSheetsService() (*sheets.Service, error) {
+	tok, err := tokenFromEnvOrFile(tokFile)
 	if err != nil {
+		b, err := ioutil.ReadFile(googleAppCredFile)
+		if err != nil {
+			log.Fatalf("Unable to read google app credentials file: %v", err)
+		}
+
+		// Oauth2 config
+		config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/drive.file")
+		if err != nil {
+			log.Fatalf("Unable to parse client secret file to config: %v", err)
+		}
+
+		// Oauth2 flow
 		tok = getTokenFromWeb(config)
 		saveToken(tokFile, tok)
 	}
-	return config.Client(context.Background(), tok)
+
+	return sheets.NewService(context.TODO(), option.WithTokenSource(oauth2.StaticTokenSource(tok)), option.WithScopes(sheets.DriveFileScope))
 }
 
 // Request a token from the web, then returns the retrieved token.
 func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+	log.Info(("Starting Oauth2 3-legged flow to generate token.."))
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
@@ -45,14 +64,32 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 }
 
 // Retrieves a token from a local file.
-func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
+func tokenFromEnvOrFile(file string) (*oauth2.Token, error) {
+	var err error
+	tok := &oauth2.Token{}
+
+	// check env var first
+	tokenJSON, ok := os.LookupEnv("SHEETS_TOKEN")
+	if ok {
+		log.Debug(("Using Sheets Token from env"))
+		err = json.NewDecoder(strings.NewReader(tokenJSON)).Decode(tok)
+	} else {
+		log.Debug(("Using Sheets Token from file"))
+		// read from file
+		f, err := os.Open(file)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		tok := &oauth2.Token{}
+		err = json.NewDecoder(f).Decode(tok)
+
+	}
 	if err != nil {
+		log.Warn("Failed to load token from env or file", err)
 		return nil, err
 	}
-	defer f.Close()
-	tok := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(tok)
+
 	return tok, err
 }
 
@@ -75,9 +112,9 @@ func saveToken(path string, token *oauth2.Token) {
 }
 
 func getPreferredTeamRangeName(teamName string) string {
-	return teamName + "_PreferredTeam"
+	return teamName + "!" + teamName + "_PreferredTeam"
 }
 
 func getTeamInfoRangeName(teamName string) string {
-	return teamName + "_Info"
+	return teamName + "!" + teamName + "_Info"
 }
