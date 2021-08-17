@@ -25,13 +25,19 @@ var (
 func TeamGen(w http.ResponseWriter, r *http.Request) {
 	log.Info("TeamGen Function")
 
+	log.Debug("RawQuery=", r.URL.RawQuery)
+
 	if rGroupName := r.URL.Query().Get("groupName"); rGroupName != "" {
 		valid := false
 		for _, g := range []string{"IntA", "IntB", "IntC", "IntD"} {
-			valid = rGroupName == g
+			if rGroupName == g {
+				valid = true
+			}
 		}
 		if !valid {
 			log.Error("Invalid GroupName")
+			http.Error(w, "Bad input groupName. Must be IntA|IntB|IntC|IntD", http.StatusInternalServerError)
+			return
 		}
 		groupName = rGroupName
 	}
@@ -39,15 +45,23 @@ func TeamGen(w http.ResponseWriter, r *http.Request) {
 		layout := "2006-01-02"
 		if date, err = time.Parse(layout, rAfterDate); err != nil {
 			log.Error(err)
-
+			if err != nil {
+				http.Error(w, "Bad input date. Format yyyy-mm-dd:"+err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 	if rRotationOffset := r.URL.Query().Get("rotationOffset"); rRotationOffset != "" {
 		if teamRotationOffset, err = strconv.Atoi(rRotationOffset); err != nil {
 			log.Error(err)
+			if err != nil {
+				http.Error(w, "Bad input rotationOffset:"+err.Error(), http.StatusInternalServerError)
+				return
+			}
+
 		}
 	}
-	log.Infof("Params: group=%s date=%v rotationOffset=%d", groupName, date, teamRotationOffset)
+	log.Infof("Params=> group=%s date=%v rotationOffset=%d", groupName, date, teamRotationOffset)
 
 	spreadSheetID := tg.GenerateTeamsAndPublish(groupName, date, teamRotationOffset)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
