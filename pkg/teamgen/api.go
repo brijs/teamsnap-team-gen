@@ -23,7 +23,7 @@ var (
 
 func GenerateTeamsAndPublish(groupName string, date time.Time, teamRotationOffset int) string {
 	teamId := teamNameLookup[groupName]
-	log.Info("Running for Teamsnap Team = (", teamId, groupName, "), for date=", date)
+	log.Info("Running for Teamsnap Team = (", teamId, groupName, "), for date=", date, " and rotationOffset=", teamRotationOffset)
 
 	tsClient := ts.NewClient(getTeamSnapToken())
 
@@ -96,7 +96,7 @@ func getRotation(e ts.Event, teamRotationOffset int) int {
 	// count number of weeks since Aug 8
 	duration := t.Sub(f)
 	rotation := int(math.Ceil(float64(duration.Hours() / (24 * 7))))
-	log.Debug("Team Rotation offset = ", rotation)
+	log.Debug("Calculated Team Rotation offset = ", rotation)
 	if rotation < 0 {
 		return 0
 	}

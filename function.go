@@ -15,7 +15,7 @@ var (
 	date               time.Time = time.Now().Add(time.Hour * -100)
 	err                error
 	opsNewSheet        bool
-	teamRotationOffset int
+	teamRotationOffset int = -1
 )
 
 // For Google Cloud Function to work, this Function
