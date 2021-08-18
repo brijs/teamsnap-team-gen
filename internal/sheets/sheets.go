@@ -54,7 +54,8 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 	values = append(values, []interface{}{nextMatch.LeagueName})
 	values = append(values, []interface{}{"Location", nextMatch.Location})
 	// hardcode 15 min earlier than startDate
-	values = append(values, []interface{}{"Date", nextMatch.StartDate.Add(time.Minute * -15).Local().String()})
+	loc, _ := time.LoadLocation("America/Los_Angeles")
+	values = append(values, []interface{}{"Date", nextMatch.StartDate.Add(time.Minute * -15).In(loc).String()})
 	values = append(values, []interface{}{"Uniform", nextMatch.Uniform})
 	values = append(values, []interface{}{"Note", nextMatch.Notes})
 
