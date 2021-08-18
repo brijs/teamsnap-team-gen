@@ -15,9 +15,9 @@ import (
 var (
 	teamNameLookup = map[string]int{
 		"IntA": 6892639,
-		"IntB": 6892639, // TODO
-		"IntC": 6892639, // TODO
-		"IntD": 6892639, // TODO
+		"IntB": 6892640,
+		"IntC": 7368380,
+		"IntD": 7427307,
 	}
 )
 
