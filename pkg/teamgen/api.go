@@ -104,8 +104,8 @@ func getRotation(e ts.Event, teamRotationOffset int) int {
 }
 
 func printDebugInfo(players []*ts.Player) {
-	log.Debug("Players len=%d\n", len(players))
+	log.Debugf("Players len=%d\n", len(players))
 	for _, p := range players {
-		log.Debug("%+v\n", *p)
+		log.Debugf("%+v\n", *p)
 	}
 }

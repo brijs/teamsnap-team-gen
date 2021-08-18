@@ -3,14 +3,13 @@ package sheets
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
+	"golang.org/x/oauth2/endpoints"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 )
@@ -23,27 +22,35 @@ const (
 
 // Retrieve a token, saves the token, then returns the generated client.
 func getSheetsService() (*sheets.Service, error) {
-	tok, err := tokenFromEnvOrFile(tokFile)
-	// log.Debugf("token=%+v", tok)
-	if err != nil {
-		// Do Oauth all over again
-		b, err := ioutil.ReadFile(googleAppCredFile)
-		if err != nil {
-			log.Fatalf("Unable to read google app credentials file: %v", err)
-		}
-
-		// Oauth2 config
-		config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/drive.file")
-		if err != nil {
-			log.Fatalf("Unable to parse client secret file to config: %v", err)
-		}
-
-		// Oauth2 flow
-		tok = getTokenFromWeb(config)
-		saveToken(tokFile, tok)
+	// set up Oauth config - either to refresh_grant or auth_code flow
+	clientSecret, ok := os.LookupEnv("SHEETS_CLIENT_SECRET")
+	if !ok || clientSecret == "" {
+		log.Fatalf("SHEETS_CLIENT_SECRET not set or is empty")
 	}
 
-	return sheets.NewService(context.TODO(), option.WithTokenSource(oauth2.StaticTokenSource(tok)), option.WithScopes(sheets.DriveFileScope))
+	config := &oauth2.Config{
+		ClientID:     "701503350435-5duo582esn5mdncb6uvbp8i662m2f9c0.apps.googleusercontent.com",
+		ClientSecret: clientSecret,
+		RedirectURL:  "urn:ietf:wg:oauth:2.0:oob",
+		Scopes:       []string{sheets.DriveFileScope},
+		Endpoint:     endpoints.Google,
+	}
+
+	// read cached token if present - the access_token may be stale, in which case, it'll be refreshed
+	tok, err := tokenFromEnvOrFile(tokFile)
+	// check if nothing is cached ie this is the first-time we are initiating Oauth (auth_code flow)
+	if os.IsNotExist(err) {
+		// auth code flow
+		tok = getTokenFromWeb(config)
+		saveToken(tokFile, tok)
+	} else if err != nil {
+		log.Fatalf("Error trying to load a cached token: %v", err)
+	}
+
+	// Setup a "reuseTokenSource"
+	ts := config.TokenSource(context.TODO(), tok)
+
+	return sheets.NewService(context.TODO(), option.WithTokenSource(ts), option.WithScopes(sheets.DriveFileScope))
 }
 
 // Request a token from the web, then returns the retrieved token.
@@ -73,10 +80,10 @@ func tokenFromEnvOrFile(file string) (*oauth2.Token, error) {
 	// check env var first
 	tokenJSON, ok := os.LookupEnv("SHEETS_TOKEN")
 	if ok && tokenJSON != "" {
-		log.Debug(("Using Sheets Token from env"))
+		log.Debug(("Trying to parse Sheets Token from env"))
 		err = json.NewDecoder(strings.NewReader(tokenJSON)).Decode(tok)
 	} else {
-		log.Debug(("Using Sheets Token from file"))
+		log.Debug(("Trying to parse Sheets Token from file"))
 		// read from file
 		f, err := os.Open(file)
 		if err != nil {
@@ -84,8 +91,8 @@ func tokenFromEnvOrFile(file string) (*oauth2.Token, error) {
 		}
 		defer f.Close()
 		err = json.NewDecoder(f).Decode(tok)
-
 	}
+
 	if err != nil {
 		log.Warn("Failed to load token from env or file", err)
 		return nil, err
