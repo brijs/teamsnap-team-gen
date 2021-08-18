@@ -12,7 +12,7 @@ import (
 
 var (
 	groupName          string    = "IntA"
-	date               time.Time = time.Now().Add(time.Hour * -100)
+	date               time.Time = time.Now().Add(time.Hour * -24)
 	err                error
 	opsNewSheet        bool
 	teamRotationOffset int = -1

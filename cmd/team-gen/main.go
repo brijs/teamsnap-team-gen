@@ -48,7 +48,7 @@ func main() {
 	// flags
 	var (
 		groupName          string    = "IntA"
-		date               time.Time = time.Now()
+		date               time.Time = time.Now().Add(time.Hour * -24)
 		err                error
 		opsNewSheet        bool
 		logLevel           string
