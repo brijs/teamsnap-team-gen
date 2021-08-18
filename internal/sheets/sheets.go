@@ -2,7 +2,6 @@ package sheets
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	ts "github.com/brijs/teamsnap-team-gen/internal/teamsnap"
@@ -64,13 +63,11 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 	values = append(values, []interface{}{"Note", nextMatch.Notes})
 
 	values = append(values, []interface{}{""})
-	values = append(values, []interface{}{""})
 
 	// Volunteer
 	for _, v := range volunteers {
 		values = append(values, []interface{}{v.VolunteerDesc, v.FirstName + " " + v.LastName})
 	}
-	values = append(values, []interface{}{""})
 	values = append(values, []interface{}{""})
 
 	// team A
@@ -108,129 +105,16 @@ func (s *Service) PublishMatch(nextMatch ts.Event, teamA []*ts.Player, teamB []*
 	case "IntD":
 		sheetId = 1437245619
 	}
-	teamsRowStart := 5 + 2 + 2 + 1 + len(volunteers)
-	teamsRowEnd := teamsRowStart + len(teamA) + len(teamB) + 3
-	// clear all formatting
-	// background for top row
-	// Bold Location/Date/Time
-	// Borders around teams
-	r1 := []byte(fmt.Sprintf(`
-	{
-		"requests": [
-			{
-				"updateCells": {
-					"range": {
-						"sheetId": %d,
-						"startRowIndex": 5
-					},
-					"fields": "userEnteredFormat"
-				}
-			},
-			{
-				"repeatCell": {
-					"cell": {
-						"userEnteredFormat": {
-							"backgroundColor": {
-								"blue": 0.2,
-								"green": 0.2,
-								"red": 0.2
-							},
-							"horizontalAlignment": "CENTER",
-							"textFormat": {
-								"foregroundColor": {
-									"red": 1.0,
-									"green": 1.0,
-									"blue": 1.0
-								},
-								"bold": true
-							}
-						}
-					},
-					"fields": "userEnteredFormat(backgroundColor,horizontalAlignment,textFormat)",
-					"range": {
-						"sheetId": %d,
-						"startRowIndex": 0,
-						"endRowIndex": 1,
-						"startColumnIndex": 0,
-						"endColumnIndex": 1
-					}
-				}
-			},
-			{
-				"repeatCell": {
-					"cell": {
-						"userEnteredFormat": {
-							"textFormat": {
-								"bold": true
-							}
-						}
-					},
-					"fields": "userEnteredFormat(textFormat)",
-					"range": {
-						"sheetId": %d,
-						"startRowIndex": 1,
-						"endRowIndex": 4,
-						"startColumnIndex": 1,
-						"endColumnIndex": 2
-					}
-				}
-			},
-			{
-				"updateBorders": {
-					"range": {
-						"sheetId": %d,
-						"startRowIndex": %d,
-						"endRowIndex": %d,
-						"startColumnIndex": 0,
-						"endColumnIndex": 3
-					},
-					"top": {
-						"style": "SOLID",
-						"width": 1,
-						"color": {
-							"black": 1.0
-						}
-					},
-					"bottom": {
-						"style": "SOLID",
-						"width": 1,
-						"color": {
-							"black": 1.0
-						}
-					},
-					"left": {
-						"style": "SOLID",
-						"width": 1,
-						"color": {
-							"black": 1.0
-						}
-					},
-					"right": {
-						"style": "SOLID",
-						"width": 1,
-						"color": {
-							"black": 1.0
-						}
-					},
-					"innerHorizontal": {
-						"style": "SOLID",
-						"width": 1,
-						"color": {
-							"black": 1.0
-						}
-					},
-					"innerVertical": {
-						"style": "SOLID",
-						"width": 1,
-						"color": {
-							"black": 1.0
-						}
-					},
-					"fields": "*"
-				}
-			}
-		]
-	}	`, sheetId, sheetId, sheetId, sheetId, teamsRowStart, teamsRowEnd))
+	teamARowStart := 5 + 2 + 1 + len(volunteers)
+	teamBRowStart := teamARowStart + len(teamA) + 1 + 1
+	teamBRowEnd := teamARowStart + len(teamA) + len(teamB) + 3
+
+	r1, err := getJsonForFormatUpdates(formatConfig{sheetId, teamARowStart, teamBRowStart, teamBRowEnd, teamARowStart + 1, teamBRowStart + 1})
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
 	rr1 := &sheets.BatchUpdateSpreadsheetRequest{}
 	if err := json.Unmarshal(r1, rr1); err != nil {
 		log.Error(err)
