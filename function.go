@@ -25,6 +25,13 @@ var (
 func TeamGen(w http.ResponseWriter, r *http.Request) {
 	log.Info("TeamGen Function")
 
+	var (
+		groupName          string    = "IntA"
+		date               time.Time = time.Now().Add(time.Hour * -24)
+		err                error
+		teamRotationOffset int = -1
+	)
+
 	log.Info("RawQuery=", r.URL.RawQuery)
 
 	if rGroupName := r.URL.Query().Get("groupName"); rGroupName != "" {
